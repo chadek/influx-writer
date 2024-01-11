@@ -153,58 +153,6 @@ class Inverter:
                 exit(-1)
             time.sleep(1)
 
-    def MapBitfieldToWarnings(self, bitfield):
-        # Define a dictionary mapping bit positions to warning messages
-        bitfield_warnings = {
-            0: "Reserved",
-            1: "Fault : Inverter fault",
-            2: "Fault : Bus Over",
-            3: "Fault : Bus Under",
-            4: "Fault : Bus Soft Fail",
-            5: "Warning : LINE_FAIL",
-            6: "Warning : OPVShort",
-            7: "Fault : Inverter voltage too low",
-            8: "Fault : Inverter voltage too high",
-            9: "Fault (with bit 1)/warning : Over temperature",
-            10: "Fault (with bit 1)/warning: Fan locked",
-            11: "Fault (with bit 1)/warning: Battery voltage high",
-            12: "Warning: Battery low alarm",
-            13: "Reserved",
-            14: "Battery under shutdown",
-            15: "Reserved",
-            16: "Fault (with bit 1)/warning: Over load",
-            17: "Warning: Eeprom fault",
-            18: "Fault: Inverter Over Current",
-            19: "Fault: Inverter Soft Fail",
-            20: "Fault: Self Test Fail",
-            21: "Fault: OP DC Voltage Over",
-            22: "Fault: Bat Open",
-            23: "Fault: Current Sensor Fail",
-            24: "Fault: Battery Short",
-            25: "Warning: Power limit",
-            26: "Warning: PV voltage high",
-            27: "Warning: MPPT overload fault",
-            28: "Warning: MPPT overload warning",
-            29: "Warning: Battery too low to charge",
-            30: "Reserved",
-            31: "Reserved"
-        }
-
-        # Initialize an empty list to store activated warnings
-        activated_warnings = ""
-
-        # Iterate through each bit position in the 32-bit field
-        for bit_position, bit in enumerate(bitfield):
-            print(bit)
-            # Check if the bit at the current position is activated (1)
-            if bit == "1":
-                if activated_warnings == "":
-                    activated_warnings = bitfield_warnings[bit_position]
-                else:
-                    activated_warnings += ", {}".format(bitfield_warnings[bit_position])
-
-        return activated_warnings
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', help='path to a config file')
