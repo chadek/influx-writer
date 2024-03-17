@@ -568,8 +568,10 @@ class Inverter:
             failCount += 1
 
         while True:
+            now = datetime.now()
             try:
                 rawData = self.PolDataInverter()
+                rawWarn = self.PolWarningInverter()
                 failCount = 0
             except Exception as e:
                 syslog.syslog(
@@ -580,7 +582,6 @@ class Inverter:
             if deadline < now:
                 try:
                     rawConf = self.PolConfInverter()
-                    rawWarn = self.PolWarningInverter()
                 except Exception as e:
                     syslog.syslog(
                         syslog.LOG_ERR,
@@ -592,27 +593,25 @@ class Inverter:
                 payload = self.MapData(rawData)
                 self.InfluxWrite(payload)
                 if deadline < now:
-                    deadline = self.status_timer + timedelta(minutes=15)
-                    payload = self.MapConfig(rawConf)
-                    self.InfluxWrite(payload)
-                    syslog.syslog(
-                        syslog.LOG_INFO, "send config payload {}".format(payload)
-                    )
-
+                    deadline = deadline + timedelta(minutes=45)
                     if sorted(self.inverter_current_conf.items()) != sorted(
                         rawConf.items()
                     ):
                         self.ApplyInverterConf()
                         payload = self.MapConfig(rawConf)
                         self.InfluxWrite(payload)
+                        syslog.syslog(
+                            syslog.LOG_INFO, "send config payload {}".format(payload)
+                        )
 
-                    if (
-                        sorted(self.inverter_warning.items()) != sorted(rawWarn.items())
-                        or deadline < now
-                    ):
-                        self.inverter_warning = rawWarn
-                        payload = self.MapWarning(rawWarn)
-                        self.InfluxWrite(payload)
+                if (
+                    sorted(self.inverter_warning.items()) != sorted(rawWarn.items())
+                    or now > self.status_timer
+                ):
+                    self.status_timer = now + timedelta(minutes=30)
+                    self.inverter_warning = rawWarn
+                    payload = self.MapWarning(rawWarn)
+                    self.InfluxWrite(payload)
 
             elif failCount % 10 > 8:
                 syslog.syslog(
